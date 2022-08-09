@@ -16,18 +16,18 @@ function transformTag(tag) {
 
 // Remove braces, white spaces, and push to array
 function transformSynonyms(synonym) {
-  console.log(synonym);
-  const re = /\(#|\)/g;
+  const re = /(\#)|\(#|(?<=[a-z]+|\.)\)/gm;
   const arr = synonym.map((s) => s.split(re));
 
   let results = [];
 
   for (let i = 0; i < arr.length; i++) {
-    if (arr[i][1] && !results.includes(arr[i][1]) && arr[i][1].length > 0) {
-      results.push(arr[i][1].replace(/\s+/g, " ").trim());
+    for (let n = 0; n <= arr[i].length; n++) {
+      if (arr[i][n] && !results.includes(arr[i][n]) && arr[i][n].length > 1) {
+        results.push(arr[i][n].replace(/\s+/g, " ").trim());
+      }
     }
   }
-
   return results;
 }
 
@@ -42,7 +42,7 @@ const main = () => {
   let dictionary = [];
 
   console.log("Transforming data...");
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < dict.length; i++) {
     let row = {};
     row["Tag"] = transformTag(dict[i].Tag);
     row["Synonyms"] = transformSynonyms(dict[i].Variation.split("\n")).join(
