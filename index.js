@@ -32,7 +32,7 @@ function searchForPhrases(paragraph, dict) {
       const phrases = dict[i].Synonyms.split("\n");
       for (let n = 0; n < phrases.length; n++) {
         const pctg = compareStrings(sentences[j], phrases[n]);
-        if (pctg >= 0.5) {
+        if (pctg >= 0.33) {
           const newPar = par.replace(sentences[j], dict[i].Tag);
           par = newPar;
           break;
