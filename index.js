@@ -19,19 +19,12 @@ function compareStrings(sentence, phrase) {
   }
 
   const percentage = matching.length / splitSentence.length;
-  if (percentage > 0.5) {
-    console.log("--------------------------------");
-    console.log("splitSentence: ", splitSentence);
-    console.log("splitPhrases: ", splitPhrases);
-    console.log("percentage: ", percentage);
-    console.log("--------------------------------");
-  }
   return percentage;
 }
 
 // Search seach sentence in a paragraph and identify the percentage of which dictionary entry they match with.
 function searchForPhrases(paragraph, dict) {
-  let finalSentences = [];
+  let par = paragraph;
   const sentences = paragraph.split(".");
 
   for (let j = 0; j < sentences.length; j++) {
@@ -40,13 +33,14 @@ function searchForPhrases(paragraph, dict) {
       for (let n = 0; n < phrases.length; n++) {
         const pctg = compareStrings(sentences[j], phrases[n]);
         if (pctg >= 0.5) {
-          finalSentences.push(dict[i].Tag);
+          const newPar = par.replace(sentences[j], dict[i].Tag);
+          par = newPar;
           break;
         }
       }
     }
   }
-  return finalSentences;
+  return par;
 }
 
 function capitalizeFirstLetter(str) {
@@ -119,7 +113,7 @@ const main = () => {
     );
     sentences.push({
       Number: `Paragraph #${i}`,
-      Sentence: switchedSentences.join("."),
+      Sentence: switchedSentences,
     });
   }
 
