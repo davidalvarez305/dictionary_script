@@ -16,6 +16,7 @@ function transformTag(tag) {
 
 // Remove braces, white spaces, and push to array
 function transformSynonyms(synonym) {
+  console.log(synonym);
   const re = /\(#|\)/g;
   const arr = synonym.map((s) => s.split(re));
 
@@ -32,20 +33,31 @@ function transformSynonyms(synonym) {
 
 const main = () => {
   // Open file
+  console.log("Reading file...");
   const wb = xlsx.readFile("original.xlsx");
 
   const dict = xlsx.utils.sheet_to_json(wb.Sheets["Dictionary"]);
 
   // Create Key-Value Pairs of Words & Synonyms
-  let dictionary = {};
+  let dictionary = [];
 
-  for (let i = 0; i < dict.length; i++) {
-    dictionary[transformTag(dict[i].Tag)] = transformSynonyms(
-      dict[i].Variation.split("\n")
+  console.log("Transforming data...");
+  for (let i = 0; i < 50; i++) {
+    let row = {};
+    row["Tag"] = transformTag(dict[i].Tag);
+    row["Synonyms"] = transformSynonyms(dict[i].Variation.split("\n")).join(
+      "\n"
     );
+    dictionary.push(row);
   }
 
-  console.log(dictionary);
+  // Create workbook
+  console.log("Appending JSON to workbook...");
+  const data = xlsx.utils.json_to_sheet(dictionary);
+  const workbook = xlsx.utils.book_new();
+  xlsx.utils.book_append_sheet(workbook, data, "Dictionary");
+  const path = "test.xlsx";
+  xlsx.writeFile(workbook, path);
 };
 
 main();
