@@ -1,5 +1,54 @@
 import xlsx from "xlsx";
 
+// Compare each substring in a string with each phrase in a dictionarty entry.
+function compareStrings(sentence, phrase) {
+  const splitSentence = sentence.split(" ");
+  const splitPhrases = phrase.split(" ");
+
+  let matching = [];
+
+  for (let i = 0; i < splitSentence.length; i++) {
+    for (let n = 0; n < splitPhrases.length; n++) {
+      if (
+        splitSentence[i] === splitPhrases[n] &&
+        !matching.includes(splitSentence[i])
+      ) {
+        matching.push(splitSentence[i]);
+      }
+    }
+  }
+
+  const percentage = matching.length / splitSentence.length;
+  if (percentage > 0.5) {
+    console.log("--------------------------------");
+    console.log("splitSentence: ", splitSentence);
+    console.log("splitPhrases: ", splitPhrases);
+    console.log("percentage: ", percentage);
+    console.log("--------------------------------");
+  }
+  return percentage;
+}
+
+// Search seach sentence in a paragraph and identify the percentage of which dictionary entry they match with.
+function searchForPhrases(paragraph, dict) {
+  let finalSentences = [];
+  const sentences = paragraph.split(".");
+
+  for (let j = 0; j < sentences.length; j++) {
+    for (let i = 0; i < dict.length; i++) {
+      const phrases = dict[i].Synonyms.split("\n");
+      for (let n = 0; n < phrases.length; n++) {
+        const pctg = compareStrings(sentences[j], phrases[n]);
+        if (pctg >= 0.5) {
+          finalSentences.push(dict[i].Tag);
+          break;
+        }
+      }
+    }
+  }
+  return finalSentences;
+}
+
 function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -57,6 +106,25 @@ const main = () => {
   const workbook = xlsx.utils.book_new();
   xlsx.utils.book_append_sheet(workbook, data, "Dictionary");
   const path = "test.xlsx";
+
+  // Start process on sentences.
+  const paragraphs = xlsx.utils.sheet_to_json(wb.Sheets["Paragraphs"]);
+
+  let sentences = [];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const switchedSentences = searchForPhrases(
+      paragraphs[i].Paragraph,
+      dictionary
+    );
+    sentences.push({
+      Number: `Paragraph #${i}`,
+      Sentence: switchedSentences.join("."),
+    });
+  }
+
+  console.log(sentences);
+
   xlsx.writeFile(workbook, path);
 };
 
