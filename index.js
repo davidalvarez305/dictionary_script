@@ -2,23 +2,29 @@ import xlsx from "xlsx";
 
 // Compare each substring in a string with each phrase in a dictionarty entry.
 function compareStrings(sentence, phrase) {
-  const splitSentence = sentence.split(" ");
-  const splitPhrases = phrase.split(" ");
+  const splitSentence = sentence.match(/([A-Za-z0-9]+)/g);
+  const splitPhrases = phrase.match(/([A-Za-z0-9]+)/g);
 
   let matching = [];
 
-  for (let i = 0; i < splitSentence.length; i++) {
-    for (let n = 0; n < splitPhrases.length; n++) {
-      if (
-        splitSentence[i] === splitPhrases[n] &&
-        !matching.includes(splitSentence[i])
-      ) {
-        matching.push(splitSentence[i]);
+  if (splitSentence) {
+    for (let i = 0; i < splitSentence.length; i++) {
+      if (splitPhrases) {
+        for (let n = 0; n < splitPhrases.length; n++) {
+          if (
+            splitSentence[i].toLowerCase() === splitPhrases[n].toLowerCase() &&
+            !matching.includes(splitSentence[i])
+          ) {
+            matching.push(splitSentence[i]);
+          }
+        }
       }
     }
   }
 
-  const percentage = matching.length / splitSentence.length;
+  const sentenceLength = splitSentence ? splitSentence.length : 0;
+  const percentage = matching.length / sentenceLength;
+
   return percentage;
 }
 
@@ -32,7 +38,7 @@ function searchForPhrases(paragraph, dict) {
       const phrases = dict[i].Synonyms.split("\n");
       for (let n = 0; n < phrases.length; n++) {
         const pctg = compareStrings(sentences[j], phrases[n]);
-        if (pctg >= 0.33) {
+        if (pctg >= 0.5) {
           const newPar = par.replace(sentences[j], dict[i].Tag);
           par = newPar;
           break;
@@ -59,15 +65,16 @@ function transformTag(tag) {
 
 // Remove braces, white spaces, and push to array
 function transformSynonyms(synonym) {
+  const matchSynonymsRegex = /((\#)|\(#)([a-zA-Z0-9 ]+)(\)(?=))/g;
   const re = /(\#)|\(#|(?<=[a-z]+|\.)\)/gm;
-  const arr = synonym.map((s) => s.split(re));
-
+  const arr = synonym.match(matchSynonymsRegex);
   let results = [];
 
-  for (let i = 0; i < arr.length; i++) {
-    for (let n = 0; n <= arr[i].length; n++) {
-      if (arr[i][n] && !results.includes(arr[i][n]) && arr[i][n].length > 1) {
-        results.push(arr[i][n].replace(/\s+/g, " ").trim());
+  if (arr) {
+    for (let i = 0; i < arr.length; i++) {
+      const str = arr[i].split(re)[2];
+      if (str && !results.includes(str) && str.length > 1) {
+        results.push(str.replace(/\s+/g, " ").trim());
       }
     }
   }
@@ -86,11 +93,12 @@ const main = () => {
 
   console.log("Transforming data...");
   for (let i = 0; i < dict.length; i++) {
+    let syns = dict[i].Variation;
+    let modifiedTag = "(#" + dict[i].Tag + ")";
+    syns += "\n" + modifiedTag.toLowerCase();
     let row = {};
     row["Tag"] = transformTag(dict[i].Tag);
-    row["Synonyms"] = transformSynonyms(dict[i].Variation.split("\n")).join(
-      "\n"
-    );
+    row["Synonyms"] = transformSynonyms(syns).join("\n");
     dictionary.push(row);
   }
 
@@ -117,8 +125,9 @@ const main = () => {
     });
   }
 
-  console.log(sentences);
-
+  console.log("Appending paragraphs to workbook...");
+  const sentencesData = xlsx.utils.json_to_sheet(sentences);
+  xlsx.utils.book_append_sheet(workbook, sentencesData, "Paragraphs");
   xlsx.writeFile(workbook, path);
 };
 
