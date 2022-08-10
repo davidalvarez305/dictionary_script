@@ -1,3 +1,4 @@
+import axios from "axios";
 import xlsx from "xlsx";
 
 // Compare each substring in a string with each phrase in a dictionarty entry.
@@ -35,11 +36,11 @@ function searchForPhrases(paragraph, dict) {
 
   for (let j = 0; j < sentences.length; j++) {
     for (let i = 0; i < dict.length; i++) {
-      const phrases = dict[i].Synonyms.split("\n");
+      const phrases = dict[i].synonyms.split("\n");
       for (let n = 0; n < phrases.length; n++) {
         const pctg = compareStrings(sentences[j], phrases[n]);
-        if (pctg >= 0.5) {
-          const newPar = par.replace(sentences[j], dict[i].Tag);
+        if (pctg >= 0.33) {
+          const newPar = par.replace(sentences[j], dict[i].tag);
           par = newPar;
           break;
         }
@@ -60,7 +61,7 @@ function transformTag(tag) {
   for (let i = 0; i < split.length; i++) {
     result += capitalizeFirstLetter(split[i]);
   }
-  return "(#" + result + ")";
+  return { word: result, tag: "(#" + result + ")" };
 }
 
 // Remove braces, white spaces, and push to array
@@ -81,6 +82,16 @@ function transformSynonyms(synonym) {
   return results;
 }
 
+function postDictionarty(dict) {
+  let url = `http://localhost:4008/api/word/bulk`;
+  axios.post(url, dict, null).then(console.log).catch(console.error);
+}
+
+function postParagraphs(paragraphs) {
+  let url = `http://localhost:4008/api/sentences`;
+  axios.post(url, paragraphs, null).then(console.log).catch(console.error);
+}
+
 const main = () => {
   // Open file
   console.log("Reading file...");
@@ -97,8 +108,9 @@ const main = () => {
     let modifiedTag = "(#" + dict[i].Tag + ")";
     syns += "\n" + modifiedTag.toLowerCase();
     let row = {};
-    row["Tag"] = transformTag(dict[i].Tag);
-    row["Synonyms"] = transformSynonyms(syns).join("\n");
+    row["word"] = transformTag(dict[i].Tag).word;
+    row["tag"] = transformTag(dict[i].Tag).tag;
+    row["synonyms"] = transformSynonyms(syns).join("\n");
     dictionary.push(row);
   }
 
@@ -120,8 +132,9 @@ const main = () => {
       dictionary
     );
     sentences.push({
-      Number: `Paragraph #${i}`,
-      Sentence: switchedSentences,
+      paragraph_id: 15, // IDK
+      sentence: switchedSentences,
+      template_id: 1,
     });
   }
 
