@@ -44,6 +44,13 @@ function searchForPhrases(paragraph, dict) {
           par = newPar;
           break;
         }
+        const substringMatch = sentences[j].indexOf(phrases[n]);
+        if (substringMatch !== -1) {
+          const newSentence = sentences[j].replace(phrases[n], dict[i].tag);
+          const subPar = par.replace(sentences[j], newSentence);
+          par = subPar;
+          break;
+        }
       }
     }
   }
