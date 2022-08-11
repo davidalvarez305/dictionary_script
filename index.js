@@ -66,7 +66,7 @@ function transformTag(tag) {
 
 // Remove braces, white spaces, and push to array
 function transformSynonyms(synonym) {
-  const matchSynonymsRegex = /((\#)|\(#)([a-zA-Z0-9 ]+)(\)(?=))/g;
+  const matchSynonymsRegex = /((\#)|\(#)([a-zA-Z0-9 ,'"’.;:\-\+]+)(\)(?=))/g;
   const re = /(\#)|\(#|(?<=[a-z]+|\.)\)/gm;
   const arr = synonym.match(matchSynonymsRegex);
   let results = [];
@@ -80,16 +80,6 @@ function transformSynonyms(synonym) {
     }
   }
   return results;
-}
-
-function postDictionarty(dict) {
-  let url = `http://localhost:4008/api/word/bulk`;
-  axios.post(url, dict, null).then(console.log).catch(console.error);
-}
-
-function postParagraphs(paragraphs) {
-  let url = `http://localhost:4008/api/sentences`;
-  axios.post(url, paragraphs, null).then(console.log).catch(console.error);
 }
 
 const main = () => {
@@ -119,7 +109,7 @@ const main = () => {
   const data = xlsx.utils.json_to_sheet(dictionary);
   const workbook = xlsx.utils.book_new();
   xlsx.utils.book_append_sheet(workbook, data, "Dictionary");
-  const path = "test.xlsx";
+  const path = "output.xlsx";
 
   // Start process on sentences.
   const paragraphs = xlsx.utils.sheet_to_json(wb.Sheets["Paragraphs"]);
@@ -132,7 +122,7 @@ const main = () => {
       dictionary
     );
     sentences.push({
-      paragraph_id: 15, // IDK
+      paragraph_id: 14,
       sentence: switchedSentences,
       template_id: 1,
     });
