@@ -1,3 +1,4 @@
 node_modules
-*.env
+dictionary.json
+paragraphs.json
 *.xlsx
