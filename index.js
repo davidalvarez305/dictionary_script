@@ -40,7 +40,7 @@ function searchForPhrases(paragraph, dict) {
       for (let n = 0; n < phrases.length; n++) {
         const pctg = compareStrings(sentences[j], phrases[n]);
         if (pctg >= 0.33) {
-          const newPar = par.replace(sentences[j], dict[i].tag);
+          const newPar = par.replace(sentences[j], "(" + dict[i].word + ":U)");
           par = newPar;
           break;
         }
@@ -105,8 +105,9 @@ const main = () => {
     let modifiedTag = "(#" + dict[i].Tag + ")";
     syns += "\n" + modifiedTag.toLowerCase();
     let row = {};
-    row["word"] = transformTag(dict[i].Tag).word;
-    row["tag"] = transformTag(dict[i].Tag).tag;
+    const key = transformTag(dict[i].Tag);
+    row["word"] = key.word;
+    row["tag"] = key.tag;
     row["synonyms"] = transformSynonyms(syns).join("\n");
     dictionary.push(row);
   }
