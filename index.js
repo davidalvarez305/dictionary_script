@@ -1,5 +1,5 @@
-import axios from "axios";
 import xlsx from "xlsx";
+import fs from "fs";
 
 // Compare each substring in a string with each phrase in a dictionarty entry.
 function compareStrings(sentence, phrase) {
@@ -139,6 +139,22 @@ const main = () => {
   const sentencesData = xlsx.utils.json_to_sheet(sentences);
   xlsx.utils.book_append_sheet(workbook, sentencesData, "Paragraphs");
   xlsx.writeFile(workbook, path);
+
+  // Writing file to JSON
+  console.log("Writing JSON Data to Files...");
+  function cb(err, data) {
+    if (err) {
+      console.log(err);
+    }
+    console.log(data);
+  }
+
+  const dictionaryJson = dictionary.map((d) => {
+    return { ...d, synonyms: d.synonyms.split("\n") };
+  });
+
+  fs.writeFile("dictionary.json", JSON.stringify(dictionaryJson), "utf8", cb);
+  fs.writeFile("paragraphs.json", JSON.stringify(sentences), "utf8", cb);
 };
 
 main();
